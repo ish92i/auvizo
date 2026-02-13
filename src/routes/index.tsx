@@ -1,17 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import {
-  useUser,
-  useOrganization,
-  UserButton,
-  OrganizationSwitcher,
-} from "@clerk/clerk-react"
-import { useQuery, useMutation } from "convex/react"
-import { api } from "../../convex/_generated/api"
+import { useUser } from "@clerk/clerk-react"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/")({ component: HomePage })
+export const Route = createFileRoute("/")({ component: LandingPage })
 
-function HomePage() {
+function LandingPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -26,158 +20,128 @@ function HomePage() {
     )
   }
 
-  return <HomePageContent />
+  return <LandingContent />
 }
 
-function HomePageContent() {
-  const { isSignedIn, user, isLoaded } = useUser()
-  const { organization, isLoaded: orgLoaded } = useOrganization()
-  const convexUser = useQuery(api.users.current)
-  const convexOrg = useQuery(api.organizations.current)
-  const storeUser = useMutation(api.users.store)
-  const storeOrg = useMutation(api.organizations.store)
-
-  useEffect(() => {
-    if (isSignedIn) {
-      storeUser()
-    }
-  }, [isSignedIn, storeUser])
-
-  useEffect(() => {
-    if (organization) {
-      storeOrg({
-        clerkOrgId: organization.id,
-        name: organization.name,
-        slug: organization.slug ?? undefined,
-        imageUrl: organization.imageUrl ?? undefined,
-      })
-    }
-  }, [organization, storeOrg])
-
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    )
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
-        <h1 className="text-4xl font-bold">Welcome to Auvizo</h1>
-        <p className="text-muted-foreground">Please sign in to continue</p>
-        <Link
-          to="/sign-in"
-          className="rounded-md bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90"
-        >
-          Sign In
-        </Link>
-      </div>
-    )
-  }
+function LandingContent() {
+  const { isSignedIn, isLoaded } = useUser()
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6">
-      {/* Top bar with Clerk controls */}
-      <div className="fixed top-4 right-4 flex items-center gap-4">
-        <OrganizationSwitcher
-          appearance={{
-            elements: {
-              rootBox: "flex items-center",
-            },
-          }}
-        />
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "h-10 w-10",
-            },
-          }}
-        />
-      </div>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* Subtle gradient background */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,oklch(0.5_0.07_150/0.15),transparent)]" />
 
-      <h1 className="text-6xl font-bold">GGs 🎉</h1>
-      <p className="text-xl text-muted-foreground">You're authenticated!</p>
-
-      {/* User Profile Card */}
-      <div className="mt-4 rounded-lg border bg-card p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Your Profile</h2>
-        <div className="space-y-2 text-sm">
-          <p>
-            <span className="text-muted-foreground">Name:</span>{" "}
-            {user?.fullName ?? "N/A"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Email:</span>{" "}
-            {user?.primaryEmailAddress?.emailAddress}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Clerk ID:</span>{" "}
-            <code className="text-xs">{user?.id}</code>
-          </p>
-          {convexUser && (
-            <p>
-              <span className="text-muted-foreground">Convex User ID:</span>{" "}
-              <code className="text-xs">{convexUser._id}</code>
-            </p>
-          )}
-        </div>
-        {user?.imageUrl && (
-          <img
-            src={user.imageUrl}
-            alt="Profile"
-            className="mt-4 h-16 w-16 rounded-full"
-          />
-        )}
-      </div>
-
-      {/* Organization Card */}
-      {orgLoaded && organization && (
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Your Organization</h2>
-          <div className="space-y-2 text-sm">
-            <p>
-              <span className="text-muted-foreground">Name:</span>{" "}
-              {organization.name}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Slug:</span>{" "}
-              {organization.slug ?? "N/A"}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Clerk Org ID:</span>{" "}
-              <code className="text-xs">{organization.id}</code>
-            </p>
-            {convexOrg && (
-              <p>
-                <span className="text-muted-foreground">Convex Org ID:</span>{" "}
-                <code className="text-xs">{convexOrg._id}</code>
-              </p>
-            )}
-            <p>
-              <span className="text-muted-foreground">Members:</span>{" "}
-              {organization.membersCount}
-            </p>
+      {/* Navigation */}
+      <nav className="relative z-10 flex items-center justify-between px-6 py-4 md:px-12 lg:px-20">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <span className="text-sm font-bold text-primary-foreground">A</span>
           </div>
-          {organization.imageUrl && (
-            <img
-              src={organization.imageUrl}
-              alt="Organization"
-              className="mt-4 h-16 w-16 rounded"
-            />
+          <span className="text-lg font-semibold tracking-tight">Auvizo</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isLoaded && isSignedIn ? (
+            <Link to="/dashboard">
+              <Button size="sm">Dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link to="/sign-in">
+                <Button variant="ghost" size="sm">
+                  Sign in
+                </Button>
+              </Link>
+              <Link to="/sign-up">
+                <Button size="sm">Get started</Button>
+              </Link>
+            </>
           )}
         </div>
-      )}
+      </nav>
 
-      {orgLoaded && !organization && (
-        <div className="rounded-lg border border-dashed bg-card p-6 text-center">
-          <p className="text-muted-foreground">
-            No organization selected. Use the switcher above to create or select
-            one.
-          </p>
+      {/* Hero */}
+      <main className="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-32 text-center md:pt-32 lg:pt-40">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/50 px-3 py-1 text-sm text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+          </span>
+          Now in beta
         </div>
-      )}
+
+        <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+          Build something
+          <br />
+          <span className="text-primary">extraordinary</span>
+        </h1>
+
+        <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground md:text-xl">
+          A modern platform designed to help you ship faster, collaborate better,
+          and focus on what matters most.
+        </p>
+
+        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link to={isSignedIn ? "/dashboard" : "/sign-up"}>
+            <Button className="h-11 px-8 text-base">
+              {isSignedIn ? "Go to Dashboard" : "Start for free"}
+            </Button>
+          </Link>
+          <Button variant="outline" className="h-11 px-8 text-base">
+            Learn more
+          </Button>
+        </div>
+      </main>
+
+      {/* Feature grid */}
+      <section className="relative z-10 mx-auto max-w-5xl px-6 pb-24">
+        <div className="grid gap-6 md:grid-cols-3">
+          <FeatureCard
+            title="Fast by default"
+            description="Optimized for speed with real-time sync and instant updates across all your devices."
+          />
+          <FeatureCard
+            title="Built for teams"
+            description="Collaborate seamlessly with your team. Shared workspaces, roles, and permissions."
+          />
+          <FeatureCard
+            title="Secure & reliable"
+            description="Enterprise-grade security with end-to-end encryption and 99.9% uptime SLA."
+          />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-border/50 px-6 py-8">
+        <div className="mx-auto flex max-w-5xl items-center justify-between text-sm text-muted-foreground">
+          <span>© 2026 Auvizo. All rights reserved.</span>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-foreground transition-colors">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Terms
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+function FeatureCard({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <div className="group rounded-xl border border-border/50 bg-card/50 p-6 transition-all hover:border-border hover:bg-card hover:shadow-md">
+      <h3 className="mb-2 font-semibold text-foreground">{title}</h3>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
     </div>
   )
 }

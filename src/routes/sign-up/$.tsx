@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router"
 import { SignUp } from "@clerk/clerk-react"
 import { useEffect, useState } from "react"
 
-export const Route = createFileRoute("/sign-up")({ component: SignUpPage })
+export const Route = createFileRoute("/sign-up/$")({ component: SignUpCatchAll })
 
-function SignUpPage() {
+function SignUpCatchAll() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
