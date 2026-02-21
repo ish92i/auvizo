@@ -826,10 +826,10 @@ function EquipmentsPage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 variant="destructive"
-                                onSelect={(e) => {
-                                  e.preventDefault()
+                                onClick={(e) => {
+                                  e.stopPropagation()
                                   setEquipmentToDelete(equipment._id)
-                                  setDeleteDialogOpen(true)
+                                  setTimeout(() => setDeleteDialogOpen(true), 0)
                                 }}
                               >
                                 <Trash2 className="size-4" />
