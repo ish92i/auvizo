@@ -64,6 +64,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -330,10 +331,12 @@ function EquipmentsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(
     null,
   )
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [editingEquipment, setEditingEquipment] = useState<{
     _id: string
     name: string
@@ -408,6 +411,54 @@ function EquipmentsPage() {
     },
     [removeEquipment],
   )
+
+  const handleBulkDelete = useCallback(async () => {
+    await Promise.all(
+      Array.from(selectedIds).map((id) => removeEquipment({ id: id as any })),
+    )
+    setSelectedIds(new Set())
+    setBulkDeleteDialogOpen(false)
+  }, [selectedIds, removeEquipment])
+
+  const handleBulkStatusChange = useCallback(
+    async (status: EquipmentStatus) => {
+      await Promise.all(
+        Array.from(selectedIds).map((id) =>
+          updateStatus({ id: id as any, status }),
+        ),
+      )
+      setSelectedIds(new Set())
+    },
+    [selectedIds, updateStatus],
+  )
+
+  const toggleSelectAll = useCallback(() => {
+    if (equipments) {
+      const pageIds = equipments
+        .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+        .map((e) => e._id)
+      if (
+        selectedIds.size === pageIds.length &&
+        pageIds.every((id) => selectedIds.has(id))
+      ) {
+        setSelectedIds(new Set())
+      } else {
+        setSelectedIds(new Set(pageIds))
+      }
+    }
+  }, [equipments, selectedIds, currentPage])
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }, [])
 
   const isLoading = equipments === undefined || stats === undefined
 
@@ -574,8 +625,50 @@ function EquipmentsPage() {
           </div>
 
           <div className="rounded-xl border bg-card">
-            <div className="border-b px-4 py-3">
+            <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="font-medium">Equipment Inventory</h3>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {selectedIds.size} selected
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={<Button variant="outline" size="sm" />}
+                    >
+                      Set Status
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => handleBulkStatusChange('available')}
+                      >
+                        <CheckCircle className="size-4" />
+                        Available
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleBulkStatusChange('rented')}
+                      >
+                        <Clock className="size-4" />
+                        Rented
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleBulkStatusChange('maintenance')}
+                      >
+                        <Wrench className="size-4" />
+                        Maintenance
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setBulkDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
             {equipments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -598,6 +691,18 @@ function EquipmentsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30">
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            paginatedEquipments.length > 0 &&
+                            paginatedEquipments.every((e) =>
+                              selectedIds.has(e._id),
+                            )
+                          }
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Select all"
+                        />
+                      </TableHead>
                       <TableHead className="font-medium">Name</TableHead>
                       <TableHead className="font-medium">Category</TableHead>
                       <TableHead className="font-medium">Status</TableHead>
@@ -617,6 +722,9 @@ function EquipmentsPage() {
                     {paginatedEquipments.map((equipment) => (
                       <TableRow
                         key={equipment._id}
+                        data-state={
+                          selectedIds.has(equipment._id) && 'selected'
+                        }
                         className="cursor-pointer"
                         onClick={() =>
                           window.location.assign(
@@ -624,6 +732,13 @@ function EquipmentsPage() {
                           )
                         }
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedIds.has(equipment._id)}
+                            onCheckedChange={() => toggleSelect(equipment._id)}
+                            aria-label="Select row"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           {equipment.name}
                         </TableCell>
@@ -814,6 +929,30 @@ function EquipmentsPage() {
               className="bg-destructive/10 text-destructive hover:bg-destructive/20"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Selected Equipment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedIds.size} equipment
+              item(s)? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive/10 text-destructive hover:bg-destructive/20"
+            >
+              Delete {selectedIds.size} item(s)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
