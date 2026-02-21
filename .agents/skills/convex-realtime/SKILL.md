@@ -149,27 +149,32 @@ function TaskItem({ task }: { task: Task }) {
 ### Optimistic Updates for Lists
 
 ```typescript
-import { useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useMutation } from 'convex/react'
+import { api } from '../convex/_generated/api'
 
-function useCreateTask(userId: Id<"users">) {
-  return useMutation(api.tasks.create).withOptimisticUpdate((localStore, args) => {
-    const { title, userId } = args;
-    const currentTasks = localStore.getQuery(api.tasks.list, { userId });
+function useCreateTask(userId: Id<'users'>) {
+  return useMutation(api.tasks.create).withOptimisticUpdate(
+    (localStore, args) => {
+      const { title, userId } = args
+      const currentTasks = localStore.getQuery(api.tasks.list, { userId })
 
-    if (currentTasks !== undefined) {
-      // Add optimistic task to the list
-      const optimisticTask = {
-        _id: crypto.randomUUID() as Id<"tasks">,
-        _creationTime: Date.now(),
-        title,
-        userId,
-        completed: false,
-      };
+      if (currentTasks !== undefined) {
+        // Add optimistic task to the list
+        const optimisticTask = {
+          _id: crypto.randomUUID() as Id<'tasks'>,
+          _creationTime: Date.now(),
+          title,
+          userId,
+          completed: false,
+        }
 
-      localStore.setQuery(api.tasks.list, { userId }, [optimisticTask, ...currentTasks]);
-    }
-  });
+        localStore.setQuery(api.tasks.list, { userId }, [
+          optimisticTask,
+          ...currentTasks,
+        ])
+      }
+    },
+  )
 }
 ```
 
@@ -177,23 +182,23 @@ function useCreateTask(userId: Id<"users">) {
 
 ```typescript
 // convex/messages.ts
-import { query } from "./_generated/server";
-import { v } from "convex/values";
-import { paginationOptsValidator } from "convex/server";
+import { query } from './_generated/server'
+import { v } from 'convex/values'
+import { paginationOptsValidator } from 'convex/server'
 
 export const listPaginated = query({
   args: {
-    channelId: v.id("channels"),
+    channelId: v.id('channels'),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     return await ctx.db
-      .query("messages")
-      .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
-      .order("desc")
-      .paginate(args.paginationOpts);
+      .query('messages')
+      .withIndex('by_channel', (q) => q.eq('channelId', args.channelId))
+      .order('desc')
+      .paginate(args.paginationOpts)
   },
-});
+})
 ```
 
 ```typescript
@@ -309,55 +314,55 @@ function Dashboard({ userId }: { userId: Id<"users"> }) {
 
 ```typescript
 // convex/messages.ts
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { query, mutation } from './_generated/server'
+import { v } from 'convex/values'
 
 export const list = query({
-  args: { channelId: v.id("channels") },
+  args: { channelId: v.id('channels') },
   returns: v.array(
     v.object({
-      _id: v.id("messages"),
+      _id: v.id('messages'),
       _creationTime: v.number(),
       content: v.string(),
-      authorId: v.id("users"),
+      authorId: v.id('users'),
       authorName: v.string(),
     }),
   ),
   handler: async (ctx, args) => {
     const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
-      .order("desc")
-      .take(100);
+      .query('messages')
+      .withIndex('by_channel', (q) => q.eq('channelId', args.channelId))
+      .order('desc')
+      .take(100)
 
     // Enrich with author names
     return Promise.all(
       messages.map(async (msg) => {
-        const author = await ctx.db.get(msg.authorId);
+        const author = await ctx.db.get(msg.authorId)
         return {
           ...msg,
-          authorName: author?.name ?? "Unknown",
-        };
+          authorName: author?.name ?? 'Unknown',
+        }
       }),
-    );
+    )
   },
-});
+})
 
 export const send = mutation({
   args: {
-    channelId: v.id("channels"),
-    authorId: v.id("users"),
+    channelId: v.id('channels'),
+    authorId: v.id('users'),
     content: v.string(),
   },
-  returns: v.id("messages"),
+  returns: v.id('messages'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("messages", {
+    return await ctx.db.insert('messages', {
       channelId: args.channelId,
       authorId: args.authorId,
       content: args.content,
-    });
+    })
   },
-});
+})
 ```
 
 ```typescript
