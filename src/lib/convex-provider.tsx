@@ -21,7 +21,11 @@ export function ConvexClerkProvider({ children }: { children: ReactNode }) {
   }, [])
 
   if (!mounted || !convex || !clerkPubKey) {
-    return <>{children}</>
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
   }
 
   return (

@@ -13,9 +13,12 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSsoCallbackRouteImport } from './routes/sign-in/sso-callback'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
+import { Route as DashboardEquipmentsRouteImport } from './routes/dashboard/equipments'
+import { Route as DashboardEquipmentIdRouteImport } from './routes/dashboard/equipment/$id'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -37,6 +40,11 @@ const SignInIndexRoute = SignInIndexRouteImport.update({
   path: '/sign-in/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const SignUpSplatRoute = SignUpSplatRouteImport.update({
   id: '/sign-up/$',
   path: '/sign-up/$',
@@ -52,68 +60,94 @@ const SignInSplatRoute = SignInSplatRouteImport.update({
   path: '/sign-in/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardEquipmentsRoute = DashboardEquipmentsRouteImport.update({
+  id: '/equipments',
+  path: '/equipments',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEquipmentIdRoute = DashboardEquipmentIdRouteImport.update({
+  id: '/equipment/$id',
+  path: '/equipment/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
+  '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
+    | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/dashboard/equipment/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
+    | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
+    | '/dashboard'
     | '/sign-in'
     | '/sign-up'
+    | '/dashboard/equipment/$id'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
+    | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/dashboard/equipment/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   SignInSplatRoute: typeof SignInSplatRoute
   SignInSsoCallbackRoute: typeof SignInSsoCallbackRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
@@ -151,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/sign-up/$': {
       id: '/sign-up/$'
       path: '/sign-up/$'
@@ -172,12 +213,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/equipments': {
+      id: '/dashboard/equipments'
+      path: '/equipments'
+      fullPath: '/dashboard/equipments'
+      preLoaderRoute: typeof DashboardEquipmentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/equipment/$id': {
+      id: '/dashboard/equipment/$id'
+      path: '/equipment/$id'
+      fullPath: '/dashboard/equipment/$id'
+      preLoaderRoute: typeof DashboardEquipmentIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardEquipmentsRoute: typeof DashboardEquipmentsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardEquipmentIdRoute: typeof DashboardEquipmentIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardEquipmentsRoute: DashboardEquipmentsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardEquipmentIdRoute: DashboardEquipmentIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   SignInSplatRoute: SignInSplatRoute,
   SignInSsoCallbackRoute: SignInSsoCallbackRoute,
   SignUpSplatRoute: SignUpSplatRoute,

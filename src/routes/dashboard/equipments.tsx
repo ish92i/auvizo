@@ -16,16 +16,7 @@ import {
   Plus,
 } from 'lucide-react'
 
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbLink,
-} from '@/components/ui/breadcrumb'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+
 import {
   Table,
   TableBody,
@@ -390,24 +381,7 @@ function EquipmentsPage() {
   const isLoading = equipments === undefined || stats === undefined
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-10 shrink-0 items-center gap-2 border-b px-4">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Equipments</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Equipments</h1>
@@ -668,7 +642,6 @@ function EquipmentsPage() {
               </div>
             </>
           )}
-        </div>
 
         <Dialog
           open={editDialogOpen}
@@ -697,7 +670,6 @@ function EquipmentsPage() {
             )}
           </DialogContent>
         </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
   )
 }
