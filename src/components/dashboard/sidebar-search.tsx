@@ -6,10 +6,21 @@ import { Kbd } from "@/components/ui/kbd"
 import { useSidebar } from "@/components/ui/sidebar"
 import { SearchCommand } from "@/components/dashboard/search-command"
 
+function useIsMac() {
+  const [isMac, setIsMac] = React.useState(true)
+
+  React.useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0)
+  }, [])
+
+  return isMac
+}
+
 export function SidebarSearch() {
   const [open, setOpen] = React.useState(false)
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
+  const isMac = useIsMac()
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -28,7 +39,7 @@ export function SidebarSearch() {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "group flex items-center gap-2 rounded-lg border border-input/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground hover:border-input",
+          "group flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-muted hover:text-foreground",
           isCollapsed && "justify-center px-2"
         )}
       >
@@ -36,7 +47,7 @@ export function SidebarSearch() {
         {!isCollapsed && (
           <>
             <span className="flex-1 text-left">Search...</span>
-            <Kbd className="hidden sm:inline-flex">⌘K</Kbd>
+            <Kbd className="hidden sm:inline-flex">{isMac ? "⌘K" : "Ctrl+K"}</Kbd>
           </>
         )}
       </button>
