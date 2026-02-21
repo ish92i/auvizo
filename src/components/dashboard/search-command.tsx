@@ -8,9 +8,10 @@ import {
   BarChart3,
   Lightbulb,
   Settings,
-  FileText,
-  HelpCircle,
-  Plus,
+  PackagePlus,
+  CalendarPlus,
+  BookOpen,
+  LifeBuoy,
 } from "lucide-react"
 
 import {
@@ -22,6 +23,7 @@ import {
   CommandGroup,
   CommandItem,
   CommandShortcut,
+  CommandSeparator,
 } from "@/components/ui/command"
 
 const pages = [
@@ -78,19 +80,19 @@ const pages = [
 const actions = [
   {
     title: "Add new equipment",
-    icon: Plus,
+    icon: PackagePlus,
   },
   {
     title: "Create rental",
-    icon: Plus,
+    icon: CalendarPlus,
   },
   {
     title: "View documentation",
-    icon: FileText,
+    icon: BookOpen,
   },
   {
     title: "Get help",
-    icon: HelpCircle,
+    icon: LifeBuoy,
   },
 ]
 
@@ -117,7 +119,7 @@ export function SearchCommand({ open, onOpenChange }: SearchCommandProps) {
       title="Search"
       description="Search for pages, actions, and more..."
     >
-      <Command>
+      <Command className="rounded-none border-none">
         <CommandInput placeholder="Type to search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
@@ -127,16 +129,17 @@ export function SearchCommand({ open, onOpenChange }: SearchCommandProps) {
                 key={page.url}
                 onSelect={() => runCommand(() => navigate({ to: page.url }))}
               >
-                <page.icon className="opacity-60" />
+                <page.icon className="mr-2 h-4 w-4" />
                 <span>{page.title}</span>
                 <CommandShortcut>{page.shortcut}</CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>
+          <CommandSeparator />
           <CommandGroup heading="Actions">
             {actions.map((action) => (
               <CommandItem key={action.title} onSelect={() => onOpenChange(false)}>
-                <action.icon className="opacity-60" />
+                <action.icon className="mr-2 h-4 w-4" />
                 <span>{action.title}</span>
               </CommandItem>
             ))}
