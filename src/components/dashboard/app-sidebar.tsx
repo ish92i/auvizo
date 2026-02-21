@@ -4,6 +4,7 @@ import { LayoutDashboard, Settings, FolderKanban, Users, BarChart3, LifeBuoy } f
 import { NavMain } from "@/components/dashboard/nav-main"
 import { NavUser } from "@/components/dashboard/nav-user"
 import { OrgSwitcher } from "@/components/dashboard/org-switcher"
+import { SidebarSearch } from "@/components/dashboard/sidebar-search"
 import {
   Sidebar,
   SidebarContent,
@@ -48,6 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <OrgSwitcher />
         <SidebarSeparator className="mx-0 -mt-1" />
+        <SidebarSearch />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navItems} />
