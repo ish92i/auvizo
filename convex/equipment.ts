@@ -173,6 +173,12 @@ export const create = mutation({
       throw new Error('Not authenticated')
     }
 
+    if (!identity.orgId) {
+      throw new Error(
+        'No organization selected. Please select an organization in the sidebar.',
+      )
+    }
+
     const org = await ctx.db
       .query('organizations')
       .withIndex('by_clerk_org_id', (q) =>
