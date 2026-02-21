@@ -1,13 +1,16 @@
 import * as React from "react"
 import { useNavigate } from "@tanstack/react-router"
 import {
-  LayoutDashboard,
-  FolderKanban,
+  Home,
+  Package,
+  ShoppingCart,
+  Wrench,
   BarChart3,
-  Users,
+  Lightbulb,
   Settings,
   FileText,
   HelpCircle,
+  Plus,
 } from "lucide-react"
 
 import {
@@ -23,16 +26,34 @@ import {
 
 const pages = [
   {
-    title: "Dashboard",
+    title: "Home",
     url: "/dashboard",
-    icon: LayoutDashboard,
-    shortcut: "D",
+    icon: Home,
+    shortcut: "H",
   },
   {
-    title: "Projects",
-    url: "/dashboard/projects",
-    icon: FolderKanban,
-    shortcut: "P",
+    title: "Equipments",
+    url: "/dashboard/equipments",
+    icon: Package,
+    shortcut: "E",
+  },
+  {
+    title: "Rentals",
+    url: "/dashboard/rentals",
+    icon: ShoppingCart,
+    shortcut: "R",
+  },
+  {
+    title: "Customers",
+    url: "/dashboard/rentals/customers",
+    icon: ShoppingCart,
+    shortcut: "C",
+  },
+  {
+    title: "Maintenance",
+    url: "/dashboard/maintenance",
+    icon: Wrench,
+    shortcut: "M",
   },
   {
     title: "Analytics",
@@ -41,10 +62,10 @@ const pages = [
     shortcut: "A",
   },
   {
-    title: "Team",
-    url: "/dashboard/team",
-    icon: Users,
-    shortcut: "T",
+    title: "Recommendations",
+    url: "/dashboard/recommendations",
+    icon: Lightbulb,
+    shortcut: "X",
   },
   {
     title: "Settings",
@@ -56,8 +77,12 @@ const pages = [
 
 const actions = [
   {
-    title: "Create new project",
-    icon: FolderKanban,
+    title: "Add new equipment",
+    icon: Plus,
+  },
+  {
+    title: "Create rental",
+    icon: Plus,
   },
   {
     title: "View documentation",

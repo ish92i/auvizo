@@ -1,5 +1,5 @@
 import * as React from "react"
-import { LayoutDashboard, Settings, FolderKanban, Users, BarChart3, LifeBuoy } from "lucide-react"
+import { Home, Package, ShoppingCart, Wrench, BarChart3, Lightbulb, Settings, LifeBuoy } from "lucide-react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
 import { NavUser } from "@/components/dashboard/nav-user"
@@ -16,15 +16,31 @@ import {
 
 const navItems = [
   {
-    title: "Dashboard",
+    title: "Home",
     url: "/dashboard",
-    icon: LayoutDashboard,
+    icon: Home,
     isActive: true,
   },
   {
-    title: "Projects",
-    url: "/dashboard/projects",
-    icon: FolderKanban,
+    title: "Equipments",
+    url: "/dashboard/equipments",
+    icon: Package,
+  },
+  {
+    title: "Rentals",
+    url: "/dashboard/rentals",
+    icon: ShoppingCart,
+    items: [
+      {
+        title: "Customers",
+        url: "/dashboard/rentals/customers",
+      },
+    ],
+  },
+  {
+    title: "Maintenance",
+    url: "/dashboard/maintenance",
+    icon: Wrench,
   },
   {
     title: "Analytics",
@@ -32,9 +48,9 @@ const navItems = [
     icon: BarChart3,
   },
   {
-    title: "Team",
-    url: "/dashboard/team",
-    icon: Users,
+    title: "Recommendations",
+    url: "/dashboard/recommendations",
+    icon: Lightbulb,
   },
   {
     title: "Settings",
