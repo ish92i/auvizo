@@ -1,29 +1,22 @@
-"use client"
+'use client'
 
-import { ClerkProvider, useAuth } from "@clerk/clerk-react"
-import { ConvexProviderWithClerk } from "convex/react-clerk"
-import { ConvexReactClient } from "convex/react"
-import { useState, useEffect, type ReactNode } from "react"
+import { ClerkProvider, useAuth } from '@clerk/tanstack-react-start'
+import { ConvexProviderWithClerk } from 'convex/react-clerk'
+import { ConvexReactClient } from 'convex/react'
+import { type ReactNode } from 'react'
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL as string
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string
 
+const convex = new ConvexReactClient(convexUrl, {
+  unsavedChangesWarning: false,
+})
+
 export function ConvexClerkProvider({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false)
-  const [convex] = useState(() =>
-    typeof window !== "undefined" && convexUrl
-      ? new ConvexReactClient(convexUrl)
-      : null
-  )
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted || !convex || !clerkPubKey) {
+  if (!clerkPubKey) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">Missing Clerk configuration</p>
       </div>
     )
   }
