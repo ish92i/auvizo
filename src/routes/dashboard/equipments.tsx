@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../../../convex/_generated/api'
+import { api } from '../../../convex/_generated/api'
 import { useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import {
@@ -73,7 +73,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export const Route = createFileRoute('/dashboard/equipments/')({
+export const Route = createFileRoute('/dashboard/equipments')({
   component: EquipmentsPage,
 })
 

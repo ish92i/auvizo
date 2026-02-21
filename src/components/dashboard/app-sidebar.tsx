@@ -1,10 +1,19 @@
-import * as React from "react"
-import { Home, Package, ShoppingCart, Wrench, BarChart3, Lightbulb, Settings, LifeBuoy } from "lucide-react"
+import * as React from 'react'
+import {
+  Home,
+  Package,
+  ShoppingCart,
+  Wrench,
+  BarChart3,
+  Lightbulb,
+  Settings,
+  LifeBuoy,
+} from 'lucide-react'
 
-import { NavMain } from "@/components/dashboard/nav-main"
-import { NavUser } from "@/components/dashboard/nav-user"
-import { OrgSwitcher } from "@/components/dashboard/org-switcher"
-import { SidebarSearch } from "@/components/dashboard/sidebar-search"
+import { NavMain } from '@/components/dashboard/nav-main'
+import { NavUser } from '@/components/dashboard/nav-user'
+import { OrgSwitcher } from '@/components/dashboard/org-switcher'
+import { SidebarSearch } from '@/components/dashboard/sidebar-search'
 import {
   Sidebar,
   SidebarContent,
@@ -12,49 +21,48 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar'
 
 const navItems = [
   {
-    title: "Home",
-    url: "/dashboard",
+    title: 'Home',
+    url: '/dashboard',
     icon: Home,
-    isActive: true,
   },
   {
-    title: "Equipments",
-    url: "/dashboard/equipments",
+    title: 'Equipments',
+    url: '/dashboard/equipments',
     icon: Package,
   },
   {
-    title: "Rentals",
-    url: "/dashboard/rentals",
+    title: 'Rentals',
+    url: '/dashboard/rentals',
     icon: ShoppingCart,
     items: [
       {
-        title: "Customers",
-        url: "/dashboard/rentals/customers",
+        title: 'Customers',
+        url: '/dashboard/rentals/customers',
       },
     ],
   },
   {
-    title: "Maintenance",
-    url: "/dashboard/maintenance",
+    title: 'Maintenance',
+    url: '/dashboard/maintenance',
     icon: Wrench,
   },
   {
-    title: "Analytics",
-    url: "/dashboard/analytics",
+    title: 'Analytics',
+    url: '/dashboard/analytics',
     icon: BarChart3,
   },
   {
-    title: "Recommendations",
-    url: "/dashboard/recommendations",
+    title: 'Recommendations',
+    url: '/dashboard/recommendations',
     icon: Lightbulb,
   },
   {
-    title: "Settings",
-    url: "/dashboard/settings",
+    title: 'Settings',
+    url: '/dashboard/settings',
     icon: Settings,
   },
 ]
