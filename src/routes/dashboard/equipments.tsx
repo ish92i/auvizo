@@ -26,6 +26,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -43,7 +52,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import {
   DropdownMenu,
@@ -320,6 +328,12 @@ function EquipmentsPage() {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [equipmentToDelete, setEquipmentToDelete] = useState<string | null>(
+    null,
+  )
   const [editingEquipment, setEditingEquipment] = useState<{
     _id: string
     name: string
@@ -396,6 +410,91 @@ function EquipmentsPage() {
   )
 
   const isLoading = equipments === undefined || stats === undefined
+
+  const totalPages = equipments ? Math.ceil(equipments.length / pageSize) : 0
+  const paginatedEquipments = equipments
+    ? equipments.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : []
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+  }
+
+  const renderPaginationItems = () => {
+    const items = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              isActive={currentPage === i}
+              onClick={() => handlePageChange(i)}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>,
+        )
+      }
+    } else {
+      items.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            isActive={currentPage === 1}
+            onClick={() => handlePageChange(1)}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>,
+      )
+
+      if (currentPage > 3) {
+        items.push(
+          <PaginationItem key="ellipsis-start">
+            <PaginationEllipsis />
+          </PaginationItem>,
+        )
+      }
+
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+
+      for (let i = start; i <= end; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              isActive={currentPage === i}
+              onClick={() => handlePageChange(i)}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>,
+        )
+      }
+
+      if (currentPage < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis-end">
+            <PaginationEllipsis />
+          </PaginationItem>,
+        )
+      }
+
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            isActive={currentPage === totalPages}
+            onClick={() => handlePageChange(totalPages)}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>,
+      )
+    }
+
+    return items
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -495,156 +594,169 @@ function EquipmentsPage() {
                 </Button>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30">
-                    <TableHead className="font-medium">Name</TableHead>
-                    <TableHead className="font-medium">Category</TableHead>
-                    <TableHead className="font-medium">Status</TableHead>
-                    <TableHead className="font-medium text-right">
-                      Asset Value
-                    </TableHead>
-                    <TableHead className="font-medium text-right">
-                      Hours
-                    </TableHead>
-                    <TableHead className="font-medium text-right">
-                      Updated
-                    </TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {equipments.map((equipment) => (
-                    <TableRow
-                      key={equipment._id}
-                      className="cursor-pointer"
-                      onClick={() =>
-                        window.location.assign(
-                          `/dashboard/equipment/${equipment._id}`,
-                        )
-                      }
-                    >
-                      <TableCell className="font-medium">
-                        {equipment.name}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {CATEGORY_LABELS[equipment.category]}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={STATUS_CONFIG[equipment.status].variant}
-                        >
-                          {STATUS_CONFIG[equipment.status].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatCurrency(equipment.assetValue)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-muted-foreground">
-                        {equipment.totalHoursUsed?.toLocaleString() ?? '—'}
-                      </TableCell>
-                      <TableCell className="text-right text-xs text-muted-foreground">
-                        {format(equipment.updatedAt, 'MMM d, yyyy')}
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="size-8"
-                              />
-                            }
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="font-medium">Name</TableHead>
+                      <TableHead className="font-medium">Category</TableHead>
+                      <TableHead className="font-medium">Status</TableHead>
+                      <TableHead className="font-medium text-right">
+                        Asset Value
+                      </TableHead>
+                      <TableHead className="font-medium text-right">
+                        Hours
+                      </TableHead>
+                      <TableHead className="font-medium text-right">
+                        Updated
+                      </TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedEquipments.map((equipment) => (
+                      <TableRow
+                        key={equipment._id}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          window.location.assign(
+                            `/dashboard/equipment/${equipment._id}`,
+                          )
+                        }
+                      >
+                        <TableCell className="font-medium">
+                          {equipment.name}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {CATEGORY_LABELS[equipment.category]}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={STATUS_CONFIG[equipment.status].variant}
                           >
-                            <MoreHorizontal className="size-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setEditingEquipment({
-                                  _id: equipment._id,
-                                  name: equipment.name,
-                                  category: equipment.category,
-                                  status: equipment.status,
-                                  assetValue: equipment.assetValue,
-                                  notes: equipment.notes,
-                                  totalHoursUsed: equipment.totalHoursUsed,
-                                })
-                                setEditDialogOpen(true)
-                              }}
-                            >
-                              <Pencil className="size-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleStatusChange(equipment._id, 'available')
+                            {STATUS_CONFIG[equipment.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatCurrency(equipment.assetValue)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-muted-foreground">
+                          {equipment.totalHoursUsed?.toLocaleString() ?? '—'}
+                        </TableCell>
+                        <TableCell className="text-right text-xs text-muted-foreground">
+                          {format(equipment.updatedAt, 'MMM d, yyyy')}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  className="size-8"
+                                />
                               }
-                              disabled={equipment.status === 'available'}
                             >
-                              <CheckCircle className="size-4" />
-                              Set Available
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleStatusChange(equipment._id, 'rented')
-                              }
-                              disabled={equipment.status === 'rented'}
-                            >
-                              <Clock className="size-4" />
-                              Set Rented
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleStatusChange(equipment._id, 'maintenance')
-                              }
-                              disabled={equipment.status === 'maintenance'}
-                            >
-                              <Wrench className="size-4" />
-                              Set Maintenance
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <AlertDialog>
-                              <AlertDialogTrigger
-                                render={
-                                  <DropdownMenuItem variant="destructive" />
+                              <MoreHorizontal className="size-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setEditingEquipment({
+                                    _id: equipment._id,
+                                    name: equipment.name,
+                                    category: equipment.category,
+                                    status: equipment.status,
+                                    assetValue: equipment.assetValue,
+                                    notes: equipment.notes,
+                                    totalHoursUsed: equipment.totalHoursUsed,
+                                  })
+                                  setEditDialogOpen(true)
+                                }}
+                              >
+                                <Pencil className="size-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(equipment._id, 'available')
                                 }
-                                onSelect={(e) => e.preventDefault()}
+                                disabled={equipment.status === 'available'}
+                              >
+                                <CheckCircle className="size-4" />
+                                Set Available
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(equipment._id, 'rented')
+                                }
+                                disabled={equipment.status === 'rented'}
+                              >
+                                <Clock className="size-4" />
+                                Set Rented
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(
+                                    equipment._id,
+                                    'maintenance',
+                                  )
+                                }
+                                disabled={equipment.status === 'maintenance'}
+                              >
+                                <Wrench className="size-4" />
+                                Set Maintenance
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={(e) => {
+                                  e.preventDefault()
+                                  setEquipmentToDelete(equipment._id)
+                                  setDeleteDialogOpen(true)
+                                }}
                               >
                                 <Trash2 className="size-4" />
                                 Delete
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete Equipment
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "
-                                    {equipment.name}"? This action cannot be
-                                    undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(equipment._id)}
-                                    className="bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {totalPages > 1 && (
+                  <div className="border-t px-4 py-3">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className={
+                              currentPage === 1
+                                ? 'pointer-events-none opacity-50'
+                                : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+                        {renderPaginationItems()}
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className={
+                              currentPage === totalPages
+                                ? 'pointer-events-none opacity-50'
+                                : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </>
@@ -675,6 +787,37 @@ function EquipmentsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open)
+          if (!open) setEquipmentToDelete(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Equipment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this equipment? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (equipmentToDelete) {
+                  handleDelete(equipmentToDelete)
+                }
+              }}
+              className="bg-destructive/10 text-destructive hover:bg-destructive/20"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
