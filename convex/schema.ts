@@ -48,4 +48,30 @@ export default defineSchema({
   })
     .index('by_organization_id', ['organizationId'])
     .index('by_organization_id_and_status', ['organizationId', 'status']),
+
+  customers: defineTable({
+    organizationId: v.id('organizations'),
+    name: v.string(),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_organization_id', ['organizationId']),
+
+  rentals: defineTable({
+    organizationId: v.id('organizations'),
+    equipmentId: v.id('equipment'),
+    customerId: v.id('customers'),
+    startDate: v.number(),
+    endDate: v.number(),
+    returnDate: v.optional(v.number()),
+    dailyRate: v.number(),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization_id', ['organizationId'])
+    .index('by_equipment_id', ['equipmentId'])
+    .index('by_customer_id', ['customerId']),
 })
