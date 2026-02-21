@@ -408,6 +408,8 @@ function EquipmentsPage() {
   const handleDelete = useCallback(
     async (id: string) => {
       await removeEquipment({ id: id as any })
+      setDeleteDialogOpen(false)
+      setEquipmentToDelete(null)
     },
     [removeEquipment],
   )
