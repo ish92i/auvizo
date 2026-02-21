@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation } from 'convex/react'
+import { useQuery, useMutation, useConvexAuth } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useState, useCallback } from 'react'
 import { format } from 'date-fns'
@@ -15,7 +15,7 @@ import {
   Trash2,
   Plus,
 } from 'lucide-react'
-
+import { Loader2 } from 'lucide-react'
 
 import {
   Table,
@@ -310,6 +310,7 @@ function EquipmentForm({
 }
 
 function EquipmentsPage() {
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
   const equipments = useQuery(api.equipment.getAll)
   const stats = useQuery(api.equipment.getStats)
   const createEquipment = useMutation(api.equipment.create)
@@ -328,6 +329,22 @@ function EquipmentsPage() {
     notes?: string
     totalHoursUsed?: number
   } | null>(null)
+
+  if (authLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <p className="text-muted-foreground">Authenticating...</p>
+      </div>
+    )
+  }
 
   const handleCreate = useCallback(
     async (data: {
@@ -382,294 +399,282 @@ function EquipmentsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Equipments</h1>
-              <p className="text-sm text-muted-foreground">
-                Manage your fleet inventory and track equipment status
-              </p>
-            </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Equipments</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your fleet inventory and track equipment status
+          </p>
+        </div>
 
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger render={<Button />}>
-                <Plus className="size-4" />
-                Add Equipment
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add New Equipment</DialogTitle>
-                  <DialogDescription>
-                    Add a new piece of equipment to your fleet.
-                  </DialogDescription>
-                </DialogHeader>
-                <EquipmentForm
-                  onSubmit={handleCreate}
-                  submitLabel="Add Equipment"
-                  onCancel={() => setCreateDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {isLoading ? (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-32 rounded-xl" />
-                ))}
-              </div>
-              <Skeleton className="h-96 rounded-xl" />
-            </>
-          ) : (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <KPICard
-                  title="Total Fleet"
-                  value={stats.total}
-                  subtitle={`${stats.total} units in inventory`}
-                  icon={Package}
-                />
-                <KPICard
-                  title="Available"
-                  value={stats.available}
-                  subtitle="Ready to rent"
-                  icon={CheckCircle}
-                />
-                <KPICard
-                  title="Rented Out"
-                  value={stats.rented}
-                  subtitle="Currently on rent"
-                  icon={Clock}
-                />
-                <KPICard
-                  title="Total Value"
-                  value={formatCurrency(stats.totalAssetValue)}
-                  subtitle="Combined asset value"
-                  icon={DollarSign}
-                  trend={
-                    stats.total > 0
-                      ? {
-                          value: Math.round(stats.utilizationRate),
-                          label: 'utilization',
-                        }
-                      : undefined
-                  }
-                />
-              </div>
-
-              <div className="rounded-xl border bg-card">
-                <div className="border-b px-4 py-3">
-                  <h3 className="font-medium">Equipment Inventory</h3>
-                </div>
-                {equipments.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Package className="size-12 text-muted-foreground/50" />
-                    <h4 className="mt-4 font-medium">No equipment yet</h4>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Add your first piece of equipment to get started
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => setCreateDialogOpen(true)}
-                    >
-                      <Plus className="size-4" />
-                      Add Equipment
-                    </Button>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/30">
-                        <TableHead className="font-medium">Name</TableHead>
-                        <TableHead className="font-medium">Category</TableHead>
-                        <TableHead className="font-medium">Status</TableHead>
-                        <TableHead className="font-medium text-right">
-                          Asset Value
-                        </TableHead>
-                        <TableHead className="font-medium text-right">
-                          Hours
-                        </TableHead>
-                        <TableHead className="font-medium text-right">
-                          Updated
-                        </TableHead>
-                        <TableHead className="w-12"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {equipments.map((equipment) => (
-                        <TableRow
-                          key={equipment._id}
-                          className="cursor-pointer"
-                          onClick={() =>
-                            window.location.assign(
-                              `/dashboard/equipment/${equipment._id}`,
-                            )
-                          }
-                        >
-                          <TableCell className="font-medium">
-                            {equipment.name}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {CATEGORY_LABELS[equipment.category]}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={STATUS_CONFIG[equipment.status].variant}
-                            >
-                              {STATUS_CONFIG[equipment.status].label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {formatCurrency(equipment.assetValue)}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums text-muted-foreground">
-                            {equipment.totalHoursUsed?.toLocaleString() ?? '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-xs text-muted-foreground">
-                            {format(equipment.updatedAt, 'MMM d, yyyy')}
-                          </TableCell>
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger
-                                render={
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    className="size-8"
-                                  />
-                                }
-                              >
-                                <MoreHorizontal className="size-4" />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setEditingEquipment({
-                                      _id: equipment._id,
-                                      name: equipment.name,
-                                      category: equipment.category,
-                                      status: equipment.status,
-                                      assetValue: equipment.assetValue,
-                                      notes: equipment.notes,
-                                      totalHoursUsed: equipment.totalHoursUsed,
-                                    })
-                                    setEditDialogOpen(true)
-                                  }}
-                                >
-                                  <Pencil className="size-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      equipment._id,
-                                      'available',
-                                    )
-                                  }
-                                  disabled={equipment.status === 'available'}
-                                >
-                                  <CheckCircle className="size-4" />
-                                  Set Available
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleStatusChange(equipment._id, 'rented')
-                                  }
-                                  disabled={equipment.status === 'rented'}
-                                >
-                                  <Clock className="size-4" />
-                                  Set Rented
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      equipment._id,
-                                      'maintenance',
-                                    )
-                                  }
-                                  disabled={equipment.status === 'maintenance'}
-                                >
-                                  <Wrench className="size-4" />
-                                  Set Maintenance
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <AlertDialog>
-                                  <AlertDialogTrigger
-                                    render={
-                                      <DropdownMenuItem variant="destructive" />
-                                    }
-                                    onSelect={(e) => e.preventDefault()}
-                                  >
-                                    <Trash2 className="size-4" />
-                                    Delete
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Delete Equipment
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to delete "
-                                        {equipment.name}"? This action cannot be
-                                        undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          handleDelete(equipment._id)
-                                        }
-                                        className="bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-            </>
-          )}
-
-        <Dialog
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            setEditDialogOpen(open)
-            if (!open) setEditingEquipment(null)
-          }}
-        >
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogTrigger render={<Button />}>
+            <Plus className="size-4" />
+            Add Equipment
+          </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Edit Equipment</DialogTitle>
+              <DialogTitle>Add New Equipment</DialogTitle>
               <DialogDescription>
-                Update the equipment details.
+                Add a new piece of equipment to your fleet.
               </DialogDescription>
             </DialogHeader>
-            {editingEquipment && (
-              <EquipmentForm
-                initialData={editingEquipment}
-                onSubmit={handleEdit}
-                submitLabel="Save Changes"
-                onCancel={() => {
-                  setEditDialogOpen(false)
-                  setEditingEquipment(null)
-                }}
-              />
-            )}
+            <EquipmentForm
+              onSubmit={handleCreate}
+              submitLabel="Add Equipment"
+              onCancel={() => setCreateDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
+
+      {isLoading ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-96 rounded-xl" />
+        </>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KPICard
+              title="Total Fleet"
+              value={stats.total}
+              subtitle={`${stats.total} units in inventory`}
+              icon={Package}
+            />
+            <KPICard
+              title="Available"
+              value={stats.available}
+              subtitle="Ready to rent"
+              icon={CheckCircle}
+            />
+            <KPICard
+              title="Rented Out"
+              value={stats.rented}
+              subtitle="Currently on rent"
+              icon={Clock}
+            />
+            <KPICard
+              title="Total Value"
+              value={formatCurrency(stats.totalAssetValue)}
+              subtitle="Combined asset value"
+              icon={DollarSign}
+              trend={
+                stats.total > 0
+                  ? {
+                      value: Math.round(stats.utilizationRate),
+                      label: 'utilization',
+                    }
+                  : undefined
+              }
+            />
+          </div>
+
+          <div className="rounded-xl border bg-card">
+            <div className="border-b px-4 py-3">
+              <h3 className="font-medium">Equipment Inventory</h3>
+            </div>
+            {equipments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Package className="size-12 text-muted-foreground/50" />
+                <h4 className="mt-4 font-medium">No equipment yet</h4>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Add your first piece of equipment to get started
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setCreateDialogOpen(true)}
+                >
+                  <Plus className="size-4" />
+                  Add Equipment
+                </Button>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="font-medium">Name</TableHead>
+                    <TableHead className="font-medium">Category</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium text-right">
+                      Asset Value
+                    </TableHead>
+                    <TableHead className="font-medium text-right">
+                      Hours
+                    </TableHead>
+                    <TableHead className="font-medium text-right">
+                      Updated
+                    </TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {equipments.map((equipment) => (
+                    <TableRow
+                      key={equipment._id}
+                      className="cursor-pointer"
+                      onClick={() =>
+                        window.location.assign(
+                          `/dashboard/equipment/${equipment._id}`,
+                        )
+                      }
+                    >
+                      <TableCell className="font-medium">
+                        {equipment.name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {CATEGORY_LABELS[equipment.category]}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={STATUS_CONFIG[equipment.status].variant}
+                        >
+                          {STATUS_CONFIG[equipment.status].label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(equipment.assetValue)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums text-muted-foreground">
+                        {equipment.totalHoursUsed?.toLocaleString() ?? '—'}
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground">
+                        {format(equipment.updatedAt, 'MMM d, yyyy')}
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="size-8"
+                              />
+                            }
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setEditingEquipment({
+                                  _id: equipment._id,
+                                  name: equipment.name,
+                                  category: equipment.category,
+                                  status: equipment.status,
+                                  assetValue: equipment.assetValue,
+                                  notes: equipment.notes,
+                                  totalHoursUsed: equipment.totalHoursUsed,
+                                })
+                                setEditDialogOpen(true)
+                              }}
+                            >
+                              <Pencil className="size-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(equipment._id, 'available')
+                              }
+                              disabled={equipment.status === 'available'}
+                            >
+                              <CheckCircle className="size-4" />
+                              Set Available
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(equipment._id, 'rented')
+                              }
+                              disabled={equipment.status === 'rented'}
+                            >
+                              <Clock className="size-4" />
+                              Set Rented
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(equipment._id, 'maintenance')
+                              }
+                              disabled={equipment.status === 'maintenance'}
+                            >
+                              <Wrench className="size-4" />
+                              Set Maintenance
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialog>
+                              <AlertDialogTrigger
+                                render={
+                                  <DropdownMenuItem variant="destructive" />
+                                }
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <Trash2 className="size-4" />
+                                Delete
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Delete Equipment
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "
+                                    {equipment.name}"? This action cannot be
+                                    undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(equipment._id)}
+                                    className="bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </>
+      )}
+
+      <Dialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open)
+          if (!open) setEditingEquipment(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Equipment</DialogTitle>
+            <DialogDescription>Update the equipment details.</DialogDescription>
+          </DialogHeader>
+          {editingEquipment && (
+            <EquipmentForm
+              initialData={editingEquipment}
+              onSubmit={handleEdit}
+              submitLabel="Save Changes"
+              onCancel={() => {
+                setEditDialogOpen(false)
+                setEditingEquipment(null)
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

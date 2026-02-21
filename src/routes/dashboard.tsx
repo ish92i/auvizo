@@ -1,10 +1,15 @@
-import { createFileRoute, Outlet, useMatches, Link } from "@tanstack/react-router"
-import { useUser, useOrganization } from "@clerk/clerk-react"
-import { useMutation, useQuery } from "convex/react"
-import { api } from "../../convex/_generated/api"
-import { useEffect, useState } from "react"
+import {
+  createFileRoute,
+  Outlet,
+  useMatches,
+  Link,
+} from '@tanstack/react-router'
+import { useUser, useOrganization } from '@clerk/clerk-react'
+import { useMutation, useConvexAuth } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { useEffect, useState } from 'react'
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
+import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,11 +17,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbLink,
-} from "@/components/ui/breadcrumb"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { TooltipProvider } from "@/components/ui/tooltip"
+} from '@/components/ui/breadcrumb'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
-export const Route = createFileRoute("/dashboard")({ component: DashboardLayout })
+export const Route = createFileRoute('/dashboard')({
+  component: DashboardLayout,
+})
 
 function DashboardLayout() {
   const [mounted, setMounted] = useState(false)
@@ -43,22 +50,23 @@ function DashboardLayout() {
 function DashboardLayoutContent() {
   const { isSignedIn, isLoaded } = useUser()
   const { organization, isLoaded: orgLoaded } = useOrganization()
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
   const storeUser = useMutation(api.users.store)
   const storeOrg = useMutation(api.organizations.store)
 
   const matches = useMatches()
-  
+
   const [orgSynced, setOrgSynced] = useState(false)
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (isSignedIn && isAuthenticated) {
       storeUser()
     }
-  }, [isSignedIn, storeUser])
+  }, [isSignedIn, isAuthenticated, storeUser])
 
   useEffect(() => {
     const syncOrg = async () => {
-      if (organization) {
+      if (organization && isAuthenticated) {
         await storeOrg({
           clerkOrgId: organization.id,
           name: organization.name,
@@ -71,26 +79,28 @@ function DashboardLayoutContent() {
       }
     }
     syncOrg()
-  }, [organization, orgLoaded, storeOrg])
+  }, [organization, orgLoaded, storeOrg, isAuthenticated])
 
   const breadcrumbs = matches
-    .filter((match) => match.pathname.startsWith("/dashboard"))
+    .filter((match) => match.pathname.startsWith('/dashboard'))
     .map((match) => {
-      const pathSegments = match.pathname.split("/").filter(Boolean)
+      const pathSegments = match.pathname.split('/').filter(Boolean)
       const lastSegment = pathSegments[pathSegments.length - 1]
-      const label = lastSegment === "dashboard" 
-        ? "Dashboard" 
-        : lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1)
+      const label =
+        lastSegment === 'dashboard'
+          ? 'Dashboard'
+          : lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1)
       return {
         path: match.pathname,
         label,
       }
     })
-    .filter((item, index, arr) => 
-      arr.findIndex(i => i.path === item.path) === index
+    .filter(
+      (item, index, arr) =>
+        arr.findIndex((i) => i.path === item.path) === index,
     )
 
-  if (!isLoaded || !orgLoaded) {
+  if (!isLoaded || !orgLoaded || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -127,7 +137,9 @@ function DashboardLayoutContent() {
                 <BreadcrumbItem key={crumb.path}>
                   {index > 0 && <BreadcrumbSeparator />}
                   {index === breadcrumbs.length - 1 ? (
-                    <BreadcrumbPage className="text-sm">{crumb.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="text-sm">
+                      {crumb.label}
+                    </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink render={<Link to={crumb.path} />}>
                       {crumb.label}
