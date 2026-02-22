@@ -54,9 +54,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { RentalForm } from './rentals/RentalForm'
+import { RentalForm } from './-RentalForm'
 
-export const Route = createFileRoute('/dashboard/rentals')({
+export const Route = createFileRoute('/dashboard/rentals/')({
   component: RentalsPage,
 })
 
