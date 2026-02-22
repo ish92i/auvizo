@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useConvexAuth } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
+import { api } from '../../../../convex/_generated/api'
 import { useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import {
