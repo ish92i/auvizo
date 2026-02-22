@@ -286,6 +286,11 @@ export const create = mutation({
       )
     }
 
+    const customer = await ctx.db.get(args.customerId)
+    if (!customer || customer.organizationId !== org._id) {
+      throw new Error('Customer not found')
+    }
+
     const now = Date.now()
     const rentalId = await ctx.db.insert('rentals', {
       organizationId: org._id,
@@ -346,10 +351,13 @@ export const markReturned = mutation({
       updatedAt: now,
     })
 
-    await ctx.db.patch(rental.equipmentId, {
-      status: 'available',
-      updatedAt: now,
-    })
+    const currentEquipment = await ctx.db.get(rental.equipmentId)
+    if (currentEquipment?.status === 'rented') {
+      await ctx.db.patch(rental.equipmentId, {
+        status: 'available',
+        updatedAt: now,
+      })
+    }
 
     return null
   },
