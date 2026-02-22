@@ -53,6 +53,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import { RentalForm } from './-RentalForm'
 
@@ -139,6 +140,7 @@ function RentalsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [returnDialogOpen, setReturnDialogOpen] = useState(false)
   const [rentalToReturn, setRentalToReturn] = useState<string | null>(null)
 
@@ -166,6 +168,34 @@ function RentalsPage() {
     },
     [markReturned],
   )
+
+  const toggleSelectAll = useCallback(() => {
+    if (rentals) {
+      const pageIds = rentals
+        .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+        .map((r) => r._id)
+      if (
+        selectedIds.size === pageIds.length &&
+        pageIds.every((id) => selectedIds.has(id))
+      ) {
+        setSelectedIds(new Set())
+      } else {
+        setSelectedIds(new Set(pageIds))
+      }
+    }
+  }, [rentals, selectedIds, currentPage])
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }, [])
 
   const isLoading = rentals === undefined || stats === undefined
 
@@ -331,6 +361,11 @@ function RentalsPage() {
           <div className="rounded-xl border bg-card">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="font-medium">Rental History</h3>
+              {selectedIds.size > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.size} selected
+                </span>
+              )}
             </div>
             {rentals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -353,6 +388,18 @@ function RentalsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30">
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            paginatedRentals.length > 0 &&
+                            paginatedRentals.every((r) =>
+                              selectedIds.has(r._id),
+                            )
+                          }
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Select all"
+                        />
+                      </TableHead>
                       <TableHead className="font-medium">Equipment</TableHead>
                       <TableHead className="font-medium">Customer</TableHead>
                       <TableHead className="font-medium">Start Date</TableHead>
@@ -370,6 +417,7 @@ function RentalsPage() {
                       return (
                         <TableRow
                           key={rental._id}
+                          data-state={selectedIds.has(rental._id) && 'selected'}
                           className="cursor-pointer"
                           onClick={() =>
                             window.location.assign(
@@ -377,6 +425,13 @@ function RentalsPage() {
                             )
                           }
                         >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedIds.has(rental._id)}
+                              onCheckedChange={() => toggleSelect(rental._id)}
+                              aria-label="Select row"
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {rental.equipmentName}
                           </TableCell>
