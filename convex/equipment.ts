@@ -157,6 +157,35 @@ export const getStats = query({
   },
 })
 
+export const getAvailable = query({
+  args: {},
+  returns: v.array(equipmentDoc),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity?.orgId) {
+      return []
+    }
+
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_clerk_org_id', (q) =>
+        q.eq('clerkOrgId', identity.orgId as string),
+      )
+      .unique()
+
+    if (!org) {
+      return []
+    }
+
+    return await ctx.db
+      .query('equipment')
+      .withIndex('by_organization_id_and_status', (q) =>
+        q.eq('organizationId', org._id).eq('status', 'available'),
+      )
+      .collect()
+  },
+})
+
 export const create = mutation({
   args: {
     name: v.string(),
