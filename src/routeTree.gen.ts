@@ -18,10 +18,10 @@ import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSsoCallbackRouteImport } from './routes/sign-in/sso-callback'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as DashboardEquipmentsRouteImport } from './routes/dashboard/equipments'
-import { Route as DashboardCustomersRouteImport } from './routes/dashboard/customers'
 import { Route as DashboardRentalsIndexRouteImport } from './routes/dashboard/rentals/index'
 import { Route as DashboardRentalsIdRouteImport } from './routes/dashboard/rentals/$id'
 import { Route as DashboardEquipmentIdRouteImport } from './routes/dashboard/equipment/$id'
+import { Route as DashboardCustomersIndexRouteImport } from './routes/dashboard/customers/index'
 import { Route as DashboardCustomersIdRouteImport } from './routes/dashboard/customers/$id'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -69,11 +69,6 @@ const DashboardEquipmentsRoute = DashboardEquipmentsRouteImport.update({
   path: '/equipments',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCustomersRoute = DashboardCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardRentalsIndexRoute = DashboardRentalsIndexRouteImport.update({
   id: '/rentals/',
   path: '/rentals/',
@@ -89,16 +84,20 @@ const DashboardEquipmentIdRoute = DashboardEquipmentIdRouteImport.update({
   path: '/equipment/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCustomersIndexRoute = DashboardCustomersIndexRouteImport.update({
+  id: '/customers/',
+  path: '/customers/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardCustomersIdRoute = DashboardCustomersIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => DashboardCustomersRoute,
+  id: '/customers/$id',
+  path: '/customers/$id',
+  getParentRoute: () => DashboardRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/customers': typeof DashboardCustomersRouteWithChildren
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
@@ -106,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
@@ -113,7 +113,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard/customers': typeof DashboardCustomersRouteWithChildren
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
@@ -121,6 +120,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
+  '/dashboard/customers': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
@@ -130,7 +130,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/customers': typeof DashboardCustomersRouteWithChildren
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
@@ -138,6 +137,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
@@ -148,7 +148,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
-    | '/dashboard/customers'
     | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
@@ -156,6 +155,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/dashboard/customers/'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
@@ -163,7 +163,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard/customers'
     | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
@@ -171,6 +170,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sign-in'
     | '/sign-up'
+    | '/dashboard/customers'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
@@ -179,7 +179,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
-    | '/dashboard/customers'
     | '/dashboard/equipments'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
@@ -187,6 +186,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/dashboard/customers/'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
@@ -268,13 +268,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEquipmentsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/customers': {
-      id: '/dashboard/customers'
-      path: '/customers'
-      fullPath: '/dashboard/customers'
-      preLoaderRoute: typeof DashboardCustomersRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/rentals/': {
       id: '/dashboard/rentals/'
       path: '/rentals'
@@ -296,40 +289,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEquipmentIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/customers/': {
+      id: '/dashboard/customers/'
+      path: '/customers'
+      fullPath: '/dashboard/customers/'
+      preLoaderRoute: typeof DashboardCustomersIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/customers/$id': {
       id: '/dashboard/customers/$id'
-      path: '/$id'
+      path: '/customers/$id'
       fullPath: '/dashboard/customers/$id'
       preLoaderRoute: typeof DashboardCustomersIdRouteImport
-      parentRoute: typeof DashboardCustomersRoute
+      parentRoute: typeof DashboardRoute
     }
   }
 }
 
-interface DashboardCustomersRouteChildren {
-  DashboardCustomersIdRoute: typeof DashboardCustomersIdRoute
-}
-
-const DashboardCustomersRouteChildren: DashboardCustomersRouteChildren = {
-  DashboardCustomersIdRoute: DashboardCustomersIdRoute,
-}
-
-const DashboardCustomersRouteWithChildren =
-  DashboardCustomersRoute._addFileChildren(DashboardCustomersRouteChildren)
-
 interface DashboardRouteChildren {
-  DashboardCustomersRoute: typeof DashboardCustomersRouteWithChildren
   DashboardEquipmentsRoute: typeof DashboardEquipmentsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardCustomersIndexRoute: typeof DashboardCustomersIndexRoute
+  DashboardCustomersIdRoute: typeof DashboardCustomersIdRoute
   DashboardEquipmentIdRoute: typeof DashboardEquipmentIdRoute
   DashboardRentalsIdRoute: typeof DashboardRentalsIdRoute
   DashboardRentalsIndexRoute: typeof DashboardRentalsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardCustomersRoute: DashboardCustomersRouteWithChildren,
   DashboardEquipmentsRoute: DashboardEquipmentsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardCustomersIndexRoute: DashboardCustomersIndexRoute,
+  DashboardCustomersIdRoute: DashboardCustomersIdRoute,
   DashboardEquipmentIdRoute: DashboardEquipmentIdRoute,
   DashboardRentalsIdRoute: DashboardRentalsIdRoute,
   DashboardRentalsIndexRoute: DashboardRentalsIndexRoute,
