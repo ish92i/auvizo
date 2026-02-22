@@ -17,6 +17,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSsoCallbackRouteImport } from './routes/sign-in/sso-callback'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
+import { Route as DashboardRentalsRouteImport } from './routes/dashboard/rentals'
 import { Route as DashboardEquipmentsRouteImport } from './routes/dashboard/equipments'
 import { Route as DashboardEquipmentIdRouteImport } from './routes/dashboard/equipment/$id'
 
@@ -60,6 +61,11 @@ const SignInSplatRoute = SignInSplatRouteImport.update({
   path: '/sign-in/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRentalsRoute = DashboardRentalsRouteImport.update({
+  id: '/rentals',
+  path: '/rentals',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardEquipmentsRoute = DashboardEquipmentsRouteImport.update({
   id: '/equipments',
   path: '/equipments',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
+  '/dashboard/rentals': typeof DashboardRentalsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
+  '/dashboard/rentals': typeof DashboardRentalsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/equipments': typeof DashboardEquipmentsRoute
+  '/dashboard/rentals': typeof DashboardRentalsRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-in/sso-callback': typeof SignInSsoCallbackRoute
   '/sign-up/$': typeof SignUpSplatRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/equipments'
+    | '/dashboard/rentals'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard/equipments'
+    | '/dashboard/rentals'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/equipments'
+    | '/dashboard/rentals'
     | '/sign-in/$'
     | '/sign-in/sso-callback'
     | '/sign-up/$'
@@ -213,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/rentals': {
+      id: '/dashboard/rentals'
+      path: '/rentals'
+      fullPath: '/dashboard/rentals'
+      preLoaderRoute: typeof DashboardRentalsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/equipments': {
       id: '/dashboard/equipments'
       path: '/equipments'
@@ -232,12 +251,14 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardEquipmentsRoute: typeof DashboardEquipmentsRoute
+  DashboardRentalsRoute: typeof DashboardRentalsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardEquipmentIdRoute: typeof DashboardEquipmentIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEquipmentsRoute: DashboardEquipmentsRoute,
+  DashboardRentalsRoute: DashboardRentalsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardEquipmentIdRoute: DashboardEquipmentIdRoute,
 }
@@ -258,13 +279,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
