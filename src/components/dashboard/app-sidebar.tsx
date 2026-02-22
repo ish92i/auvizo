@@ -8,6 +8,7 @@ import {
   Lightbulb,
   Settings,
   LifeBuoy,
+  Users,
 } from 'lucide-react'
 
 import { NavMain } from '@/components/dashboard/nav-main'
@@ -38,12 +39,11 @@ const navItems = [
     title: 'Rentals',
     url: '/dashboard/rentals',
     icon: ShoppingCart,
-    items: [
-      {
-        title: 'Customers',
-        url: '/dashboard/rentals/customers',
-      },
-    ],
+  },
+  {
+    title: 'Customers',
+    url: '/dashboard/customers',
+    icon: Users,
   },
   {
     title: 'Maintenance',
