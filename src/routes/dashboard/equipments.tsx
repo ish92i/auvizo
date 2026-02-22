@@ -171,7 +171,6 @@ function EquipmentForm({
   initialData?: {
     name: string
     category: EquipmentCategory
-    status: EquipmentStatus
     assetValue: number
     notes?: string
     totalHoursUsed?: number
@@ -179,7 +178,6 @@ function EquipmentForm({
   onSubmit: (data: {
     name: string
     category: EquipmentCategory
-    status: EquipmentStatus
     assetValue: number
     notes?: string
     totalHoursUsed?: number
@@ -190,9 +188,6 @@ function EquipmentForm({
   const [name, setName] = useState(initialData?.name ?? '')
   const [category, setCategory] = useState<EquipmentCategory>(
     initialData?.category ?? 'earthmoving',
-  )
-  const [status, setStatus] = useState<EquipmentStatus>(
-    initialData?.status ?? 'available',
   )
   const [assetValue, setAssetValue] = useState(
     initialData?.assetValue.toString() ?? '',
@@ -207,7 +202,6 @@ function EquipmentForm({
     onSubmit({
       name,
       category,
-      status,
       assetValue: parseFloat(assetValue) || 0,
       notes: notes || undefined,
       totalHoursUsed: parseFloat(totalHoursUsed) || undefined,
@@ -250,25 +244,7 @@ function EquipmentForm({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">
-            Status
-          </label>
-          <Select
-            value={status}
-            onValueChange={(v) => setStatus(v as EquipmentStatus)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="rented">Rented</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -324,7 +300,6 @@ function EquipmentsPage() {
   const stats = useQuery(api.equipment.getStats)
   const createEquipment = useMutation(api.equipment.create)
   const updateEquipment = useMutation(api.equipment.update)
-  const updateStatus = useMutation(api.equipment.updateStatus)
   const removeEquipment = useMutation(api.equipment.remove)
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -341,7 +316,6 @@ function EquipmentsPage() {
     _id: string
     name: string
     category: EquipmentCategory
-    status: EquipmentStatus
     assetValue: number
     notes?: string
     totalHoursUsed?: number
@@ -367,12 +341,11 @@ function EquipmentsPage() {
     async (data: {
       name: string
       category: EquipmentCategory
-      status: EquipmentStatus
       assetValue: number
       notes?: string
       totalHoursUsed?: number
     }) => {
-      await createEquipment(data)
+      await createEquipment({ ...data, status: 'available' })
       setCreateDialogOpen(false)
     },
     [createEquipment],
@@ -382,7 +355,6 @@ function EquipmentsPage() {
     async (data: {
       name: string
       category: EquipmentCategory
-      status: EquipmentStatus
       assetValue: number
       notes?: string
       totalHoursUsed?: number
@@ -396,13 +368,6 @@ function EquipmentsPage() {
       setEditingEquipment(null)
     },
     [editingEquipment, updateEquipment],
-  )
-
-  const handleStatusChange = useCallback(
-    async (id: string, newStatus: EquipmentStatus) => {
-      await updateStatus({ id: id as any, status: newStatus })
-    },
-    [updateStatus],
   )
 
   const handleDelete = useCallback(
@@ -421,18 +386,6 @@ function EquipmentsPage() {
     setSelectedIds(new Set())
     setBulkDeleteDialogOpen(false)
   }, [selectedIds, removeEquipment])
-
-  const handleBulkStatusChange = useCallback(
-    async (status: EquipmentStatus) => {
-      await Promise.all(
-        Array.from(selectedIds).map((id) =>
-          updateStatus({ id: id as any, status }),
-        ),
-      )
-      setSelectedIds(new Set())
-    },
-    [selectedIds, updateStatus],
-  )
 
   const toggleSelectAll = useCallback(() => {
     if (equipments) {
@@ -783,7 +736,6 @@ function EquipmentsPage() {
                                     _id: equipment._id,
                                     name: equipment.name,
                                     category: equipment.category,
-                                    status: equipment.status,
                                     assetValue: equipment.assetValue,
                                     notes: equipment.notes,
                                     totalHoursUsed: equipment.totalHoursUsed,
@@ -793,37 +745,6 @@ function EquipmentsPage() {
                               >
                                 <Pencil className="size-4" />
                                 Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(equipment._id, 'available')
-                                }
-                                disabled={equipment.status === 'available'}
-                              >
-                                <CheckCircle className="size-4" />
-                                Set Available
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(equipment._id, 'rented')
-                                }
-                                disabled={equipment.status === 'rented'}
-                              >
-                                <Clock className="size-4" />
-                                Set Rented
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(
-                                    equipment._id,
-                                    'maintenance',
-                                  )
-                                }
-                                disabled={equipment.status === 'maintenance'}
-                              >
-                                <Wrench className="size-4" />
-                                Set Maintenance
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useConvexAuth } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { useState, useCallback } from 'react'
 import { format } from 'date-fns'
-import { Users, MoreHorizontal, Pencil, Plus, Mail, Phone } from 'lucide-react'
+import { Users, MoreHorizontal, Pencil, Plus, Mail, Phone, Trash2 } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
 
 import {
@@ -148,6 +148,7 @@ function CustomersPage() {
   const customers = useQuery(api.customers.getAll)
   const createCustomer = useMutation(api.customers.create)
   const updateCustomer = useMutation(api.customers.update)
+  const deleteCustomer = useMutation(api.customers.remove)
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -382,9 +383,30 @@ function CustomersPage() {
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="font-medium">Customer Directory</h3>
               {selectedIds.size > 0 && (
-                <span className="text-sm text-muted-foreground">
-                  {selectedIds.size} selected
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">
+                    {selectedIds.size} selected
+                  </span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          `Delete ${selectedIds.size} customer${selectedIds.size > 1 ? 's' : ''}?`,
+                        )
+                      ) {
+                        selectedIds.forEach((id) => {
+                          deleteCustomer({ id: id as any })
+                        })
+                        setSelectedIds(new Set())
+                      }
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                </div>
               )}
             </div>
             {customers.length === 0 ? (
@@ -505,6 +527,17 @@ function CustomersPage() {
                               >
                                 <Pencil className="size-4" />
                                 Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => {
+                                  if (confirm(`Delete "${customer.name}"?`)) {
+                                    deleteCustomer({ id: customer._id })
+                                  }
+                                }}
+                              >
+                                <Trash2 className="size-4" />
+                                Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

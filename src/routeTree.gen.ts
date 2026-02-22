@@ -19,9 +19,9 @@ import { Route as SignInSsoCallbackRouteImport } from './routes/sign-in/sso-call
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as DashboardEquipmentsRouteImport } from './routes/dashboard/equipments'
 import { Route as DashboardRentalsIndexRouteImport } from './routes/dashboard/rentals/index'
+import { Route as DashboardCustomersIndexRouteImport } from './routes/dashboard/customers/index'
 import { Route as DashboardRentalsIdRouteImport } from './routes/dashboard/rentals/$id'
 import { Route as DashboardEquipmentIdRouteImport } from './routes/dashboard/equipment/$id'
-import { Route as DashboardCustomersIndexRouteImport } from './routes/dashboard/customers/index'
 import { Route as DashboardCustomersIdRouteImport } from './routes/dashboard/customers/$id'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -74,6 +74,11 @@ const DashboardRentalsIndexRoute = DashboardRentalsIndexRouteImport.update({
   path: '/rentals/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCustomersIndexRoute = DashboardCustomersIndexRouteImport.update({
+  id: '/customers/',
+  path: '/customers/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardRentalsIdRoute = DashboardRentalsIdRouteImport.update({
   id: '/rentals/$id',
   path: '/rentals/$id',
@@ -82,11 +87,6 @@ const DashboardRentalsIdRoute = DashboardRentalsIdRouteImport.update({
 const DashboardEquipmentIdRoute = DashboardEquipmentIdRouteImport.update({
   id: '/equipment/$id',
   path: '/equipment/$id',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCustomersIndexRoute = DashboardCustomersIndexRouteImport.update({
-  id: '/customers/',
-  path: '/customers/',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardCustomersIdRoute = DashboardCustomersIdRouteImport.update({
@@ -105,10 +105,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
+  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/rentals/': typeof DashboardRentalsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -120,10 +120,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/dashboard/customers': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
+  '/dashboard/customers': typeof DashboardCustomersIndexRoute
   '/dashboard/rentals': typeof DashboardRentalsIndexRoute
 }
 export interface FileRoutesById {
@@ -137,10 +137,10 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/customers/$id': typeof DashboardCustomersIdRoute
   '/dashboard/equipment/$id': typeof DashboardEquipmentIdRoute
   '/dashboard/rentals/$id': typeof DashboardRentalsIdRoute
+  '/dashboard/customers/': typeof DashboardCustomersIndexRoute
   '/dashboard/rentals/': typeof DashboardRentalsIndexRoute
 }
 export interface FileRouteTypes {
@@ -155,10 +155,10 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
-    | '/dashboard/customers/'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
+    | '/dashboard/customers/'
     | '/dashboard/rentals/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,10 +170,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sign-in'
     | '/sign-up'
-    | '/dashboard/customers'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
+    | '/dashboard/customers'
     | '/dashboard/rentals'
   id:
     | '__root__'
@@ -186,10 +186,10 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/sign-in/'
     | '/sign-up/'
-    | '/dashboard/customers/'
     | '/dashboard/customers/$id'
     | '/dashboard/equipment/$id'
     | '/dashboard/rentals/$id'
+    | '/dashboard/customers/'
     | '/dashboard/rentals/'
   fileRoutesById: FileRoutesById
 }
@@ -275,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRentalsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/customers/': {
+      id: '/dashboard/customers/'
+      path: '/customers'
+      fullPath: '/dashboard/customers/'
+      preLoaderRoute: typeof DashboardCustomersIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/rentals/$id': {
       id: '/dashboard/rentals/$id'
       path: '/rentals/$id'
@@ -287,13 +294,6 @@ declare module '@tanstack/react-router' {
       path: '/equipment/$id'
       fullPath: '/dashboard/equipment/$id'
       preLoaderRoute: typeof DashboardEquipmentIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/customers/': {
-      id: '/dashboard/customers/'
-      path: '/customers'
-      fullPath: '/dashboard/customers/'
-      preLoaderRoute: typeof DashboardCustomersIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/customers/$id': {
@@ -309,20 +309,20 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardEquipmentsRoute: typeof DashboardEquipmentsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
-  DashboardCustomersIndexRoute: typeof DashboardCustomersIndexRoute
   DashboardCustomersIdRoute: typeof DashboardCustomersIdRoute
   DashboardEquipmentIdRoute: typeof DashboardEquipmentIdRoute
   DashboardRentalsIdRoute: typeof DashboardRentalsIdRoute
+  DashboardCustomersIndexRoute: typeof DashboardCustomersIndexRoute
   DashboardRentalsIndexRoute: typeof DashboardRentalsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEquipmentsRoute: DashboardEquipmentsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
-  DashboardCustomersIndexRoute: DashboardCustomersIndexRoute,
   DashboardCustomersIdRoute: DashboardCustomersIdRoute,
   DashboardEquipmentIdRoute: DashboardEquipmentIdRoute,
   DashboardRentalsIdRoute: DashboardRentalsIdRoute,
+  DashboardCustomersIndexRoute: DashboardCustomersIndexRoute,
   DashboardRentalsIndexRoute: DashboardRentalsIndexRoute,
 }
 
@@ -342,3 +342,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

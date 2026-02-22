@@ -70,6 +70,36 @@ export const getById = query({
   },
 })
 
+export const remove = mutation({
+  args: { id: v.id('customers') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity?.orgId) {
+      throw new Error('Not authenticated')
+    }
+
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_clerk_org_id', (q) =>
+        q.eq('clerkOrgId', identity.orgId as string),
+      )
+      .unique()
+
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    const customer = await ctx.db.get(args.id)
+    if (!customer || customer.organizationId !== org._id) {
+      throw new Error('Customer not found')
+    }
+
+    await ctx.db.delete(args.id)
+    return null
+  },
+})
+
 export const create = mutation({
   args: {
     name: v.string(),
@@ -111,5 +141,47 @@ export const create = mutation({
       createdAt: now,
       updatedAt: now,
     })
+  },
+})
+
+export const update = mutation({
+  args: {
+    id: v.id('customers'),
+    name: v.string(),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity?.orgId) {
+      throw new Error('Not authenticated')
+    }
+
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_clerk_org_id', (q) =>
+        q.eq('clerkOrgId', identity.orgId as string),
+      )
+      .unique()
+
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    const customer = await ctx.db.get(args.id)
+    if (!customer || customer.organizationId !== org._id) {
+      throw new Error('Customer not found')
+    }
+
+    await ctx.db.patch(args.id, {
+      name: args.name,
+      email: args.email,
+      phone: args.phone,
+      notes: args.notes,
+      updatedAt: Date.now(),
+    })
+    return null
   },
 })
