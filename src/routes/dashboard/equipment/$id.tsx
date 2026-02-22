@@ -10,6 +10,9 @@ import {
   FileText,
   ArrowLeft,
   Tag,
+  ClipboardCheck,
+  Wrench,
+  AlertCircle,
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -65,6 +68,42 @@ const STATUS_CONFIG: Record<
     variant: 'outline',
     color: 'text-amber-500',
   },
+}
+
+type InspectionType = 'pre_rental' | 'post_rental' | 'routine'
+type OverallCondition = 'excellent' | 'good' | 'fair' | 'poor' | 'damaged'
+type MaintenanceStatus = 'pending' | 'in_progress' | 'completed'
+
+const INSPECTION_TYPE_LABELS: Record<InspectionType, string> = {
+  pre_rental: 'Pre-Rental',
+  post_rental: 'Post-Rental',
+  routine: 'Routine',
+}
+
+const CONDITION_CONFIG: Record<
+  OverallCondition,
+  {
+    label: string
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+  }
+> = {
+  excellent: { label: 'Excellent', variant: 'default' },
+  good: { label: 'Good', variant: 'secondary' },
+  fair: { label: 'Fair', variant: 'outline' },
+  poor: { label: 'Poor', variant: 'outline' },
+  damaged: { label: 'Damaged', variant: 'destructive' },
+}
+
+const MAINTENANCE_STATUS_CONFIG: Record<
+  MaintenanceStatus,
+  {
+    label: string
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+  }
+> = {
+  pending: { label: 'Pending', variant: 'outline' },
+  in_progress: { label: 'In Progress', variant: 'secondary' },
+  completed: { label: 'Completed', variant: 'default' },
 }
 
 function formatCurrency(value: number): string {
@@ -134,9 +173,11 @@ function LoadingSkeleton() {
 
 function EquipmentDetailsPage() {
   const { id } = Route.useParams()
-  const equipment = useQuery(api.equipment.getById, { id: id as any })
+  const data = useQuery(api.equipment.getWithMaintenanceHistory, {
+    id: id as any,
+  })
 
-  if (equipment === undefined) {
+  if (data === undefined) {
     return (
       <div className="flex flex-1 flex-col gap-6 p-6">
         <LoadingSkeleton />
@@ -144,7 +185,7 @@ function EquipmentDetailsPage() {
     )
   }
 
-  if (equipment === null) {
+  if (data === null) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
         <Package className="size-16 text-muted-foreground/50" />
@@ -159,6 +200,8 @@ function EquipmentDetailsPage() {
       </div>
     )
   }
+
+  const { equipment, inspections, maintenanceRecords } = data
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -255,6 +298,99 @@ function EquipmentDetailsPage() {
           </div>
         </DetailSection>
       )}
+
+      <DetailSection title="Inspection History">
+        {inspections.length > 0 ? (
+          <div className="divide-y">
+            {inspections.map((inspection) => (
+              <div
+                key={inspection._id}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+                    <ClipboardCheck className="size-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {INSPECTION_TYPE_LABELS[inspection.type]} Inspection
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge
+                        variant={
+                          CONDITION_CONFIG[inspection.overallCondition].variant
+                        }
+                      >
+                        {CONDITION_CONFIG[inspection.overallCondition].label}
+                      </Badge>
+                      {inspection.damageFound && (
+                        <span className="flex items-center gap-1 text-xs text-destructive">
+                          <AlertCircle className="size-3" />
+                          Damage found
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {format(inspection.inspectedAt, 'MMM d, yyyy')}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+            <ClipboardCheck className="mx-auto mb-2 size-8 opacity-50" />
+            No inspection history available
+          </div>
+        )}
+      </DetailSection>
+
+      <DetailSection title="Maintenance History">
+        {maintenanceRecords.length > 0 ? (
+          <div className="divide-y">
+            {maintenanceRecords.map((record) => (
+              <div
+                key={record._id}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+                    <Wrench className="size-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{record.workOrder}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge
+                        variant={
+                          MAINTENANCE_STATUS_CONFIG[record.status].variant
+                        }
+                      >
+                        {MAINTENANCE_STATUS_CONFIG[record.status].label}
+                      </Badge>
+                      {record.cost !== undefined && record.cost > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatCurrency(record.cost)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {record.completedAt
+                    ? format(record.completedAt, 'MMM d, yyyy')
+                    : format(record.createdAt, 'MMM d, yyyy')}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+            <Wrench className="mx-auto mb-2 size-8 opacity-50" />
+            No maintenance history available
+          </div>
+        )}
+      </DetailSection>
 
       <div className="rounded-xl border bg-muted/30 p-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
